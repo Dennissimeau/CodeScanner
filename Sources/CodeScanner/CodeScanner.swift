@@ -250,7 +250,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
             
             boundingBox.frame = previewLayer.bounds
             boundingBox.strokeColor = UIColor.green.cgColor
-            boundingBox.lineWidth = 2.0
+            boundingBox.lineWidth = 4.0
             boundingBox.fillColor = UIColor.clear.cgColor
             
             previewLayer.addSublayer(boundingBox)
