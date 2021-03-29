@@ -42,6 +42,10 @@ public struct CodeScannerView: UIViewControllerRepresentable {
                 guard let stringValue = readableObject.stringValue else { return }
                 guard isFinishScanning == false else { return }
 
+                guard let transformedObject = scannerView.previewLayer?.transformedMetadataObject(for: readableObject) as? AVMetadataMachineReadableCodeObject else { return }
+                updateBoundingBox(transformedObject.corners)
+                hideBoundingBox(after: 0.25)
+                
                 switch self.parent.scanMode {
                 case .once:
                     found(code: stringValue)
@@ -57,10 +61,6 @@ public struct CodeScannerView: UIViewControllerRepresentable {
                         found(code: stringValue)
                     }
                 }
-                
-                guard let transformedObject = scannerView.previewLayer?.transformedMetadataObject(for: readableObject) as? AVMetadataMachineReadableCodeObject else { return }
-                updateBoundingBox(transformedObject.corners)
-                hideBoundingBox(after: 0.25)
                 
             }
         }
