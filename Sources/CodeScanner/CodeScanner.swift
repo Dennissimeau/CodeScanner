@@ -22,6 +22,10 @@ public struct CodeScannerView: UIViewControllerRepresentable {
     }
 
     public class ScannerCoordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
+        private var boundingBox = CAShapeLayer()
+        private var resetTimer: Timer?
+        private let scannerView = ScannerViewController()
+        
         var parent: CodeScannerView
         var codesFound: Set<String>
         var isFinishScanning = false
@@ -53,7 +57,52 @@ public struct CodeScannerView: UIViewControllerRepresentable {
                         found(code: stringValue)
                     }
                 }
+                
+                guard let transformedObject = scannerView.previewLayer.transformedMetadataObject(for: readableObject) as? AVMetadataMachineReadableCodeObject else { return }
+                updateBoundingBox(transformedObject.corners)
+                hideBoundingBox(after: 0.25)
+                
             }
+        }
+        
+        private func setupBoundingBox() {
+            
+            boundingBox.frame = scannerView.previewLayer.bounds
+            boundingBox.strokeColor = UIColor.green.cgColor
+            boundingBox.lineWidth = 2.0
+            boundingBox.fillColor = UIColor.clear.cgColor
+            
+            scannerView.previewLayer.addSublayer(boundingBox)
+            
+        }
+        
+        private func updateBoundingBox(_ points: [CGPoint]) {
+            guard let firstPoint = points.first else { return }
+            
+            let path = UIBezierPath()
+            path.move(to: firstPoint)
+            
+            var newPoints = points
+            newPoints.removeFirst()
+            newPoints.append(firstPoint)
+            newPoints.forEach { path.addLine(to:$0) }
+            
+            boundingBox.path = path.cgPath
+            boundingBox.isHidden = false
+            
+        }
+        
+     
+        fileprivate func hideBoundingBox(after: Double) {
+            resetTimer?.invalidate()
+            resetTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval() + after,
+                                              repeats: false) {
+                                                [weak self] (timer) in
+                                                self?.resetViews() }
+        }
+
+        private func resetViews() {
+            boundingBox.isHidden = true
         }
 
         func isPastScanInterval() -> Bool {
@@ -150,6 +199,8 @@ public struct CodeScannerView: UIViewControllerRepresentable {
         var captureSession: AVCaptureSession!
         var previewLayer: AVCaptureVideoPreviewLayer!
         var delegate: ScannerCoordinator?
+        
+        
 
         override public func viewDidLoad() {
             super.viewDidLoad()
