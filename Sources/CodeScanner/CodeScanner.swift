@@ -42,13 +42,13 @@ public struct CodeScannerView: UIViewControllerRepresentable {
 
                 guard let transformedObject = parent.viewController.previewLayer?.transformedMetadataObject(for: readableObject) as? AVMetadataMachineReadableCodeObject else { return }
                 updateBoundingBox(transformedObject.corners)
-                hideBoundingBox(after: 0.25)
+                hideBoundingBox(after: 1)
                 
                 switch self.parent.scanMode {
                 case .once:
-                    found(code: stringValue)
                     // make sure we only trigger scan once per use
                     isFinishScanning = true
+                    found(code: stringValue)
                 case .oncePerCode:
                     if !codesFound.contains(stringValue) {
                         codesFound.insert(stringValue)
@@ -101,7 +101,12 @@ public struct CodeScannerView: UIViewControllerRepresentable {
         func found(code: String) {
             lastTime = Date()
             AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
-            parent.completion(.success(code))
+            parent.viewController.captureSession.stopRunning()
+            if isFinishScanning {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    self.parent.completion(.success(code))
+                }
+            }
         }
 
         func didFail(reason: ScanError) {
