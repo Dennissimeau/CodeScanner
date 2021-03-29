@@ -77,7 +77,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
             newPoints.forEach { path.addLine(to:$0) }
             
             parent.viewController.boundingBox.path = path.cgPath
-            boundingBox.isHidden = false
+            parent.viewController.boundingBox.isHidden = false
             
         }
         
@@ -91,7 +91,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
         }
 
         private func resetViews() {
-            boundingBox.isHidden = true
+            parent.viewController.boundingBox.isHidden = true
         }
 
         func isPastScanInterval() -> Bool {
