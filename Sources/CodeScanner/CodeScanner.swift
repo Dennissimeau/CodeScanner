@@ -40,8 +40,10 @@ public struct CodeScannerView: UIViewControllerRepresentable {
                 guard let stringValue = readableObject.stringValue else { return }
                 guard isFinishScanning == false else { return }
 
+                #if !targetEnvironment(simulator)
                 guard let transformedObject = parent.viewController.previewLayer?.transformedMetadataObject(for: readableObject) as? AVMetadataMachineReadableCodeObject else { return }
                 updateBoundingBox(transformedObject.corners)
+                #endif
                 hideBoundingBox(after: 1)
                 
                 switch self.parent.scanMode {
@@ -101,7 +103,9 @@ public struct CodeScannerView: UIViewControllerRepresentable {
         func found(code: String) {
             lastTime = Date()
             AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
+            #if !targetEnvironment(simulator)
             parent.viewController.captureSession.stopRunning()
+            #endif
             if isFinishScanning {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     self.parent.completion(.success(code))
@@ -117,6 +121,8 @@ public struct CodeScannerView: UIViewControllerRepresentable {
     #if targetEnvironment(simulator)
     public class ScannerViewController: UIViewController,UIImagePickerControllerDelegate,UINavigationControllerDelegate{
         var delegate: ScannerCoordinator?
+        var boundingBox = CAShapeLayer()
+        
         override public func loadView() {
             view = UIView()
             view.isUserInteractionEnabled = true
