@@ -76,7 +76,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
             newPoints.append(firstPoint)
             newPoints.forEach { path.addLine(to:$0) }
             
-            boundingBox.path = path.cgPath
+            parent.viewController.boundingBox.path = path.cgPath
             boundingBox.isHidden = false
             
         }
@@ -185,7 +185,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
     }
     #else
     public class ScannerViewController: UIViewController {
-        private var boundingBox = CAShapeLayer()
+        var boundingBox = CAShapeLayer()
         var captureSession: AVCaptureSession!
         var previewLayer: AVCaptureVideoPreviewLayer?
         var delegate: ScannerCoordinator?
