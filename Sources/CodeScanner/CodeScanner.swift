@@ -24,7 +24,6 @@ public struct CodeScannerView: UIViewControllerRepresentable {
     public class ScannerCoordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
         private var boundingBox = CAShapeLayer()
         private var resetTimer: Timer?
-        private let scannerView = ScannerViewController()
         
         var parent: CodeScannerView
         var codesFound: Set<String>
@@ -42,7 +41,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
                 guard let stringValue = readableObject.stringValue else { return }
                 guard isFinishScanning == false else { return }
 
-                guard let transformedObject = scannerView.previewLayer?.transformedMetadataObject(for: readableObject) as? AVMetadataMachineReadableCodeObject else { return }
+                guard let transformedObject = parent.viewController.previewLayer?.transformedMetadataObject(for: readableObject) as? AVMetadataMachineReadableCodeObject else { return }
                 updateBoundingBox(transformedObject.corners)
                 hideBoundingBox(after: 0.25)
                 
@@ -67,7 +66,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
         
         private func setupBoundingBox() {
             
-            guard let previewLayer = scannerView.previewLayer else { return }
+            guard let previewLayer = parent.viewController.previewLayer else { return }
             
             boundingBox.frame = previewLayer.bounds
             boundingBox.strokeColor = UIColor.green.cgColor
@@ -300,6 +299,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
     public let scanInterval: Double
     public var simulatedData = ""
     public var completion: (Result<String, ScanError>) -> Void
+    public let viewController = ScannerViewController()
 
     public init(codeTypes: [AVMetadataObject.ObjectType], scanMode: ScanMode = .once, scanInterval: Double = 2.0, simulatedData: String = "", completion: @escaping (Result<String, ScanError>) -> Void) {
         self.codeTypes = codeTypes
@@ -314,7 +314,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
     }
 
     public func makeUIViewController(context: Context) -> ScannerViewController {
-        let viewController = ScannerViewController()
+        
         viewController.delegate = context.coordinator
         return viewController
     }
