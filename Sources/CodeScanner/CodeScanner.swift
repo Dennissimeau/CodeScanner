@@ -58,7 +58,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
                     }
                 }
                 
-                guard let transformedObject = scannerView.previewLayer.transformedMetadataObject(for: readableObject) as? AVMetadataMachineReadableCodeObject else { return }
+                guard let transformedObject = scannerView.previewLayer?.transformedMetadataObject(for: readableObject) as? AVMetadataMachineReadableCodeObject else { return }
                 updateBoundingBox(transformedObject.corners)
                 hideBoundingBox(after: 0.25)
                 
@@ -67,12 +67,14 @@ public struct CodeScannerView: UIViewControllerRepresentable {
         
         private func setupBoundingBox() {
             
-            boundingBox.frame = scannerView.previewLayer.bounds
+            guard let previewLayer = scannerView.previewLayer else { return }
+            
+            boundingBox.frame = previewLayer.bounds
             boundingBox.strokeColor = UIColor.green.cgColor
             boundingBox.lineWidth = 2.0
             boundingBox.fillColor = UIColor.clear.cgColor
             
-            scannerView.previewLayer.addSublayer(boundingBox)
+            previewLayer.addSublayer(boundingBox)
             
         }
         
@@ -197,7 +199,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
     #else
     public class ScannerViewController: UIViewController {
         var captureSession: AVCaptureSession!
-        var previewLayer: AVCaptureVideoPreviewLayer!
+        var previewLayer: AVCaptureVideoPreviewLayer?
         var delegate: ScannerCoordinator?
         
         
@@ -264,9 +266,9 @@ public struct CodeScannerView: UIViewControllerRepresentable {
             if previewLayer == nil {
                 previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
             }
-            previewLayer.frame = view.layer.bounds
-            previewLayer.videoGravity = .resizeAspectFill
-            view.layer.addSublayer(previewLayer)
+            previewLayer?.frame = view.layer.bounds
+            previewLayer?.videoGravity = .resizeAspectFill
+            view.layer.addSublayer(previewLayer!)
 
             if (captureSession?.isRunning == false) {
                 captureSession.startRunning()
