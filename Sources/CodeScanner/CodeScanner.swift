@@ -22,7 +22,6 @@ public struct CodeScannerView: UIViewControllerRepresentable {
     }
 
     public class ScannerCoordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
-        private var boundingBox = CAShapeLayer()
         private var resetTimer: Timer?
         
         var parent: CodeScannerView
@@ -64,18 +63,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
             }
         }
         
-        private func setupBoundingBox() {
-            
-            guard let previewLayer = parent.viewController.previewLayer else { return }
-            
-            boundingBox.frame = previewLayer.bounds
-            boundingBox.strokeColor = UIColor.green.cgColor
-            boundingBox.lineWidth = 2.0
-            boundingBox.fillColor = UIColor.clear.cgColor
-            
-            previewLayer.addSublayer(boundingBox)
-            
-        }
+        
         
         private func updateBoundingBox(_ points: [CGPoint]) {
             guard let firstPoint = points.first else { return }
@@ -197,9 +185,11 @@ public struct CodeScannerView: UIViewControllerRepresentable {
     }
     #else
     public class ScannerViewController: UIViewController {
+        private var boundingBox = CAShapeLayer()
         var captureSession: AVCaptureSession!
         var previewLayer: AVCaptureVideoPreviewLayer?
         var delegate: ScannerCoordinator?
+        
         
         
 
@@ -235,13 +225,31 @@ public struct CodeScannerView: UIViewControllerRepresentable {
 
             if (captureSession.canAddOutput(metadataOutput)) {
                 captureSession.addOutput(metadataOutput)
-
+                
                 metadataOutput.setMetadataObjectsDelegate(delegate, queue: DispatchQueue.main)
                 metadataOutput.metadataObjectTypes = delegate?.parent.codeTypes
+                
+                DispatchQueue.main.async {
+                    self.setupBoundingBox()
+                }
+                
             } else {
                 delegate?.didFail(reason: .badOutput)
                 return
             }
+        }
+        
+        private func setupBoundingBox() {
+            
+            guard let previewLayer = previewLayer else { return }
+            
+            boundingBox.frame = previewLayer.bounds
+            boundingBox.strokeColor = UIColor.green.cgColor
+            boundingBox.lineWidth = 2.0
+            boundingBox.fillColor = UIColor.clear.cgColor
+            
+            previewLayer.addSublayer(boundingBox)
+            
         }
 
         override public func viewWillLayoutSubviews() {
