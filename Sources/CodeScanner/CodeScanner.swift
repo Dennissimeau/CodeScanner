@@ -122,6 +122,8 @@ public struct CodeScannerView: UIViewControllerRepresentable {
     public class ScannerViewController: UIViewController,UIImagePickerControllerDelegate,UINavigationControllerDelegate{
         var delegate: ScannerCoordinator?
         var boundingBox = CAShapeLayer()
+        var captureSession: AVCaptureSession!
+        var previewLayer: AVCaptureVideoPreviewLayer?
         
         override public func loadView() {
             view = UIView()
